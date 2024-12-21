@@ -1,122 +1,109 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import Loader from "../../../components/Loader/Loader";
-
-export interface User {
-    id: string,
-    email: string,
-    emailVerified: boolean,
-}
-
-export interface AuthenticationContextType {
-    user: User | null,
-    login: (email: string, password: string) => Promise<void>,
-    signup: (email: string, password: string) => Promise<void>,
-    logout: () => void,
-}
+import { API, LOGIN_URL, POST, SIGNUP_URL, V1 } from "../constants/apiConstants";
+import { LOGIN, REQUEST_PASSWORD_RESET, SIGNUP } from "../constants/routes";
+import { AuthenticationContextType, User } from "./TypeInterfaces";
+import fetchClient from "../../../utils/fetchClient";
 
 const AuthenticationContext = createContext<AuthenticationContextType | null>(null);
 
 export function useAuthentication() {
-    return useContext(AuthenticationContext);
+  return useContext(AuthenticationContext);
 }
 
 function AuthenticationContextProvider() {
-    const [user, setUser] = useState<User | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const location = useLocation();
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const location = useLocation();
 
-    const isAuthRoute =
-        location.pathname === "/login" ||
-        location.pathname === "/signup" ||
-        location.pathname === "/request-password-reset";
+  const isAuthRoute =
+        location.pathname === LOGIN ||
+        location.pathname === SIGNUP ||
+        location.pathname === REQUEST_PASSWORD_RESET;
 
-    const login = async (email: string, password: string) => {
-        const resp = await fetch(import.meta.env.VITE_API_URL + "/api/v1/authentication/login", {
-            method: "POST",
-            headers: {
-                'Content-type': "application/json",
-            },
-            body: JSON.stringify({email, password}),
-        });
-        if (resp.ok) {
-            const { token } = await resp.json();
-            localStorage.setItem("token", token);
-        } else {
-            const { message } = await resp.json();
-            throw new Error(message);
-        }
+  const login = useCallback(async (email: string, password: string) => {
+    const resp = await fetchClient({
+      url: import.meta.env.VITE_API_URL + API + V1 + LOGIN_URL,
+      httpMethod: POST,
+      body: JSON.stringify({email, password}),
+    });
+
+    if (resp.ok) {
+      const { token } = await resp.json();
+      localStorage.setItem("token", token);
+    } else {
+      const { message } = await resp.json();
+      throw new Error(message);
     }
+  }, []);
     
-    const signup = async (email: string, password: string) => {
-        const resp = await fetch(import.meta.env.VITE_API_URL + "/api/v1/authentication/register", {
-            method: "POST",
-            headers: {
-                "Content-type": "application/json",
-            },
-            body: JSON.stringify({ email, password }),
-        })
+  const signup = useCallback(async (email: string, password: string) => {
+    const resp = await fetchClient({
+      url: import.meta.env.VITE_API_URL + API + V1 + SIGNUP_URL, 
+      httpMethod: POST,
+      body: JSON.stringify({ email, password }),
+    });
     
-        if (resp.ok) {
-            const { token } = await resp.json();
-            localStorage.setItem("token", token);
-        } else {
-            const { message } = await resp.json();
-            throw new Error(message);
-        }
+    if (resp.ok) {
+      const { token } = await resp.json();
+      localStorage.setItem("token", token);
+    } else {
+      const { message } = await resp.json();
+      throw new Error(message);
     }
+  }, []);
     
-    const logout = () => {
-        localStorage.removeItem("token");
-        setUser(null);
-    }
+  const logout = useCallback(() => {
+    localStorage.removeItem("token");
+    setUser(null);
+  }, []);
 
-    const fetchUser = async () => {
-        try {
-            const resp = await fetch(import.meta.env.VITE_API_URL + "/api/v1/authentication/user", {
-                method: "GET",
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem("token")}`,
-                },
-            })
+  const fetchUser = useCallback(async () => {
+    try {
+      const resp = await fetchClient({
+        url: import.meta.env.VITE_API_URL + "/api/v1/authentication/user", 
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem("token")}`,
+        }});
     
-            if (!resp.ok) {
-                throw new Error("Authentication failed");
-            }
-            const user = await resp.json();
-            setUser(user);
-        } catch(error) {
-            console.log(error);
-        } finally {
-            setIsLoading(false);
-        }
+      if (!resp.ok) {
+        throw new Error("Authentication failed");
+      }
+      const user = await resp.json();
+      setUser(user);
+    } catch(error) {
+      console.log(error);
+    } finally {
+      setIsLoading(false);
     }
+  }, []);
 
-    useEffect(() => {
-        if (user) {
-            return;
-        }
-        fetchUser();
-    }, [user, location.pathname]);
-
-    if (isLoading) {
-        return <Loader />;
+  useEffect(() => {
+    if (user) {
+      return;
     }
+    fetchUser();
+  }, [user, location.pathname]);
 
-    if (!isLoading && !user && !isAuthRoute) {
-        return <Navigate to="/login" />
-    }
+  if (isLoading) {
+    return <Loader />;
+  }
 
-    if (user && user.emailVerified && isAuthRoute) {
-        return <Navigate to="/" />
-    }
+  if (!isLoading && !user && !isAuthRoute) {
+    return <Navigate to="/login" />;
+  }
 
-    return (
-        <AuthenticationContext.Provider value={{ user, login, signup, logout }}>
-            {(user && !user.emailVerified) ? <Navigate to="/verify-email" /> : null}
-            <Outlet />
-        </AuthenticationContext.Provider>
-    );
+  if (user && user.emailVerified && isAuthRoute) {
+    return <Navigate to="/" />;
+  }
+
+  return (
+    <AuthenticationContext.Provider value={{ user, login, signup, logout }}>
+      {(user && !user.emailVerified) ? <Navigate to="/verify-email" /> : null}
+      <Outlet />
+    </AuthenticationContext.Provider>
+  );
 }
 
 export default AuthenticationContextProvider;

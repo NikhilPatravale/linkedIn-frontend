@@ -1,4 +1,4 @@
-import { ButtonHTMLAttributes, Children } from "react";
+import { ButtonHTMLAttributes } from "react";
 import classes from "./Button.module.scss";
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -6,11 +6,11 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 }
 
 function Button({ children, outline, ...otherProps }: ButtonProps) {
-    return (
-        <button className={`${classes.root} ${outline ? classes.outline : ''}`} {...otherProps}>
-            {children}
-        </button>
-    );
+  return (
+    <button className={`${classes.root} ${outline ? classes.outline : ''}`} {...otherProps}>
+      {children}
+    </button>
+  );
 }
 
 export default Button;
