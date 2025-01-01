@@ -1,11 +1,10 @@
 import { Fragment } from "react/jsx-runtime";
-import Layout from "../../components/Layout/Layout";
 import classes from "./VerifyEmail.module.scss";
 import Box from "../../components/Box/Box";
 import Input from "../../components/Input/Input";
 import { FormEvent, useState } from "react";
-import Button from "../../components/Button/Button";
 import { useNavigate } from "react-router-dom";
+import Button from "../../components/Button/Button";
 
 function VerifyEmail() {
   const [message, setMessage] = useState("");
@@ -50,7 +49,7 @@ function VerifyEmail() {
       if (resp.ok) {
         navigate("/");
       } else {
-        const message = await resp.json();
+        const { message } = await resp.json();
         setErrorMessage(message);
       }
     } catch(error) {
@@ -63,7 +62,7 @@ function VerifyEmail() {
   };
 
   return (
-    <Layout className={classes.root}>
+    <div className={classes.root}>
       <Box>
         <Fragment>
           <h1>Verify your email</h1>
@@ -72,15 +71,20 @@ function VerifyEmail() {
             <Input type="text" label="Verification code" key="code" name="code" onFocus={() => {
               setMessage("");
               setErrorMessage("");
-            }} />
+            }}
+            floatingInput
+            />
             {message ? <p className={classes.message}>{message}</p> : null}
             {errorMessage ? <p className={classes.errorMessage}>{errorMessage}</p> : null}
             <Button type="submit" outline={false} >Validate email</Button>
-            <Button type="button" outline={true} onClick={sendVerificationToken}>Send again</Button>
+            <Button type="button" outline={true} onClick={() => {
+              setErrorMessage("");
+              sendVerificationToken();
+            }}>Send again</Button>
           </form>
         </Fragment>
       </Box>
-    </Layout>
+    </div>
   );
 }
 

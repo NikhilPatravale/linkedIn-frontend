@@ -1,0 +1,12 @@
+.root {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: 100vh;
+
+  .container {
+    max-width: 74rem;
+    width: 100%;
+    padding: 1rem;
+    margin: 0 auto;
+  }
+}

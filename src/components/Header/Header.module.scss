@@ -1,0 +1,109 @@
+.root {
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  color: rgb(0 0 0 / 60%);
+  font-size: 0.9rem;
+
+  .container {
+    max-width: 74rem;
+    padding-inline: 1rem;
+    margin: 0 auto;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    position: relative;
+    gap: 2rem;
+  }
+
+  .logo {
+    width: 3rem;
+    height: 3rem;
+    fill: var(--primary-color);
+  }
+
+  .left {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .toggle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: inherit;
+  }
+
+  ul {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 5rem;
+    right: 1rem;
+    background-color: white;
+    border: 1px;
+    padding: 2rem;
+    width: min(18rem, 100%);
+    gap: 1rem;
+  }
+
+  a {
+    display: flex;
+    gap: 1rem;
+
+     &:hover {
+      color: black;
+     }
+  }
+
+  .active {
+    color: var(--primary-color);
+  }
+
+  @media screen and (min-width: 1080px) {
+    .left{
+      grid-template-columns: auto 0.7fr 0.3fr;
+    }
+
+    .right {
+      gap: 2rem;
+    }
+
+    ul a {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+
+    ul {
+      display: flex;
+      flex-direction: row;
+      width: auto;
+      gap: 2rem;
+      position: relative;
+      top: 0;
+      right: 0;
+      padding: 0;
+    }
+
+    .toggle {
+      display: none;
+    }
+  }
+}

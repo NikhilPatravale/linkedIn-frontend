@@ -1,0 +1,70 @@
+.root {
+    display: grid;
+    gap: 2rem;
+    max-width: 74rem;
+    width: 100%;
+    margin: 0 auto;
+
+    .left,
+    .right {
+        display: none;
+    }
+
+    @media screen and (width >= 1135px) {
+        grid-template-columns: 14rem 1fr 20rem;
+        .left,
+        .right {
+            display: block;
+        }
+    }
+
+    .center {
+        .posting {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            background-color: white;
+            padding: 1rem;
+            gap: 1rem;
+            align-items: center;
+            height: 8rem;
+        }
+
+        .avatar {
+            width: 5rem;
+            height: 5rem;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .startPost {
+            border: 1px solid black;
+            border-radius: 999px;
+            height: 3rem;
+        }
+
+        .filterSection {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            width: 100%;
+
+            .filters {
+                display: flex;
+                height: 3rem;
+                gap: 1rem;
+            }
+
+            .allFilter {
+                background-color: rgb(211, 210, 210);
+            }
+
+            .feedFilter {
+                background-color: var(--primary-color-dark);
+            }
+
+            button {
+                border: none;
+            }
+        }
+    }
+}

@@ -1,0 +1,43 @@
+.root {  
+  .profile {
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #e6e6e6;
+    padding-right: 1rem;
+    font-size: 0.9rem;
+    align-items: center;
+
+    .avatar {
+      width: 1.5rem;
+      height: 1.5rem;
+      border-radius: 50%;
+    }
+  }
+
+  .menu {
+    position: absolute;
+    top: 5rem;
+    right: 1rem;
+    width: min(18rem, 100%);
+    background-color: white;
+    padding: 1rem;
+    
+    .menuProfile {
+      display: flex;
+      flex-direction: row;
+      text-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .avatar {
+      width: 3em;
+      height: 3rem;
+    }
+
+    .links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+  }
+}

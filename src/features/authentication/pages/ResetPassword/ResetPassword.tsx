@@ -1,5 +1,4 @@
 import { Fragment } from "react/jsx-runtime";
-import Layout from "../../components/Layout/Layout";
 import classes from "./ResetPassword.module.scss";
 import Input from "../../components/Input/Input";
 import Button from "../../components/Button/Button";
@@ -61,7 +60,7 @@ function ResetPassword() {
         const { message } = await resp.json();
         setErrorMessage(message);
       } else {
-        navigate("/login");
+        navigate("/authentication/login");
       }
     } catch (err) {
       if (err instanceof Error) {
@@ -81,7 +80,7 @@ function ResetPassword() {
   };
 
   return (
-    <Layout className={classes.root}>
+    <div className={classes.root}>
       <Box>
         <Fragment>
           <h1>Reset Password</h1>
@@ -94,7 +93,7 @@ function ResetPassword() {
                 <Input key="newPassword" type="password" name="newPassword" id="newPassword" onFocus={clearError} label="New Password" />
                 {errorMessage ? <p className={classes.errorMessage}>{errorMessage}</p> : null}
                 <Button outline={false} type="submit" disabled={loading}>
-                  {`${loading} ? '...' : 'Reset Password'`}
+                  {loading ? '...' : 'Reset Password'}
                 </Button>
                 <Button outline={true} onClick={() => {
                   setIsSubmitted(false);
@@ -112,7 +111,7 @@ function ResetPassword() {
                 <Input key="email" type="email" name="email" id="email" label="Email" />
                 {errorMessage ? <p className={classes.errorMessage}>{errorMessage}</p> : null}
                 <Button outline={false} type="submit" disabled={loading}>
-                  {`${loading} ? '...' : 'Next'`}
+                  {loading ? '...' : 'Next'}
                 </Button>
                 <Button outline={true} type="button" onClick={() => navigate("/login")} disabled={loading}>
                                     Back
@@ -122,7 +121,7 @@ function ResetPassword() {
           }
         </Fragment>
       </Box>
-    </Layout>
+    </div>
   );
 }
 

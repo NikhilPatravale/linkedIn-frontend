@@ -2,6 +2,12 @@ export interface User {
     id: string,
     email: string,
     emailVerified: boolean,
+    profilePicture?: string,
+    firstName?: string,
+    lastName?: string,
+    company?: string,
+    position?: string,
+    profileComplete: boolean,
 }
 
 export interface AuthenticationContextType {

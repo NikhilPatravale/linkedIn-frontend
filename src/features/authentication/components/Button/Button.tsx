@@ -2,12 +2,14 @@ import { ButtonHTMLAttributes } from "react";
 import classes from "./Button.module.scss";
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-    outline: boolean
+    outline: boolean,
+    size?: "sm" | "md" | "lg"
+    className?: string
 }
 
-function Button({ children, outline, ...otherProps }: ButtonProps) {
+function Button({ children, size, outline, className, ...otherProps }: ButtonProps) {
   return (
-    <button className={`${classes.root} ${outline ? classes.outline : ''}`} {...otherProps}>
+    <button className={`${classes.root} ${outline ? classes.outline : ''} ${className} ${classes[size || "lg"]}`} {...otherProps}>
       {children}
     </button>
   );

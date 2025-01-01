@@ -4,13 +4,26 @@
     align-items: center;
     gap: 0.5rem;
     width: 100%;
-    padding: 1rem;
     background-color: var(--primary-color);
     color: white;
     border-radius: 9999px;
     margin-block: 1rem;
     font-weight: bold;
     transition: 0.3s;
+
+    &.lg {
+        padding: 1rem;
+    }
+
+    &.mg {
+        padding: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    &.sm { 
+        padding: 0.2rem;
+        font-size: 0.8rem;
+    }
 
     &:disabled {
         color: black;
@@ -25,7 +38,6 @@
     &.outline {
         background-color: white;
         border: 1px solid rgba(0, 0, 0, 0.6);
-        padding: 0.5rem;
         color: black;
         font-weight: normal;
 

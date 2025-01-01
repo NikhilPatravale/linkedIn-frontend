@@ -2,10 +2,50 @@
     display: grid;
     gap: 0.5rem;
     margin-block: 1rem;
+    position: relative;
     input {
-        width: 100%;
-        padding: 0.7rem;
+        position: relative;
         border: 1px solid rgba(0, 0, 0, 0.6);
         border-radius: 4px;
+        line-height: 1.3;
+    }
+
+    &.lg input {
+        padding: 2rem;
+    }
+
+    &.md input {
+        padding: 1rem;
+        font-size: 0.9rem;
+    }
+
+    &.sm input {
+        padding: 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    .floatingInput {
+        padding: 1.2rem 0.8rem 0.5rem !important;
+    }
+
+    .floatingLabel {
+        position: absolute;
+        top: 0;
+        left: 0;
+        font-size: 1rem;
+        padding: 0.8rem 0 0 1rem;
+        transition: 0.2s ease;
+        color: rgba(0, 0, 0, 0.6);
+    }
+
+    input:focus + .floatingLabel,
+    input:valid + .floatingLabel {
+        transform: translate(-1rem, -1rem);
+        scale: 0.80;
+        color: black !important;
+    }
+
+    .right {
+        display: grid;
     }
 }

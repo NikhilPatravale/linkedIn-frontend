@@ -1,16 +1,16 @@
-import { ReactElement } from "react";
-import classes from "./Layout.module.scss";
+import classes from "./AuthenticationLayout.module.scss";
+import { Outlet } from "react-router-dom";
 
-function Layout({ children, className }: { children: ReactElement, className: string}) {
+function AuthenticationLayout() {
   return (
-    <div className={`${classes.root} ${className}`}>
+    <div className={classes.root}>
       <header className={classes.container}>
         <a href="/">
           <img src="/logo.svg" alt="linkedIn-main" className={classes.logo} />
         </a>
       </header>
       <main className={classes.container}>
-        {children}
+        <Outlet />
       </main>
       <footer className={classes.footer}>
         <ul className={classes.container}>
@@ -33,4 +33,4 @@ function Layout({ children, className }: { children: ReactElement, className: st
   );
 }
 
-export default Layout;
+export default AuthenticationLayout;

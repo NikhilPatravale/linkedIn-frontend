@@ -8,7 +8,7 @@ import fetchClient from "../../../utils/fetchClient";
 
 const AuthenticationContext = createContext<AuthenticationContextType | null>(null);
 
-export function useAuthentication() {
+export function useAuthentication(): AuthenticationContextType | null {
   return useContext(AuthenticationContext);
 }
 
@@ -91,7 +91,7 @@ function AuthenticationContextProvider() {
   }
 
   if (!isLoading && !user && !isAuthRoute) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/authentication/login" />;
   }
 
   if (user && user.emailVerified && isAuthRoute) {
@@ -100,7 +100,7 @@ function AuthenticationContextProvider() {
 
   return (
     <AuthenticationContext.Provider value={{ user, login, signup, logout }}>
-      {(user && !user.emailVerified) ? <Navigate to="/verify-email" /> : null}
+      {(user && !user.emailVerified) ? <Navigate to="/authentication/verify-email" /> : null}
       <Outlet />
     </AuthenticationContext.Provider>
   );
