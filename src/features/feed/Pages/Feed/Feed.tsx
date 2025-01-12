@@ -69,7 +69,7 @@ export function Feed() {
         {errorMessage && <p style={{color: "red"}}>{errorMessage}</p>}
         <div>
           {
-            posts ? posts.map(() => <Post />) : null
+            posts ? posts.map((post) => <Post post={post} setPosts={setPosts} />) : null
           }
         </div>
         {/* {openModal ? <Modal></Modal> : null} */}

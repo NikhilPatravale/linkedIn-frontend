@@ -1,7 +1,7 @@
 import { GET } from "../features/authentication/constants/apiConstants";
 
 interface FetchParams {
-  url: string,
+    url: string,
     httpMethod?: string,
     headers?: Record<string, string>,
     body?: BodyInit | null | undefined,
