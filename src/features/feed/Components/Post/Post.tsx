@@ -3,7 +3,7 @@ import { User } from "../../../authentication/context/TypeInterfaces";
 import classes from "./Post.module.scss";
 import { useAuthentication } from "../../../authentication/context/AuthenticationContextProvider";
 import fetchClient from "../../../../utils/fetchClient";
-import { PUT } from "../../../authentication/constants/apiConstants";
+import { DELETE, PUT } from "../../../authentication/constants/apiConstants";
 import Comment from "../Comment/Comment";
 
 export interface PostComment {
@@ -15,7 +15,7 @@ export interface PostComment {
 interface Post {
   id: Number,
   content: String,
-  picture?: String,
+  picture?: string,
   creationDateTime: String,
   updatedDateTime?: String,
   author: User,
@@ -33,6 +33,7 @@ function Post({post, setPosts}: PostProps) {
   const [postLiked, setPostLiked] = useState(!!post.likes?.some((like) => like.id === user?.id));
   const [showCommentsSection, setShowCommentsSection] = useState(false);
   const [addCommentText, setAddCommentText] = useState("");
+  const [showEditOptions, setShowEditOptions] = useState(false);
 
   const likePost = async () => {
     try {
@@ -101,27 +102,70 @@ function Post({post, setPosts}: PostProps) {
     }
   };
 
+  const deletePost = async (postId: Number) => {
+    const postToDelete = post;
+    setPosts(prev => prev.filter(singlePost => singlePost.id !== postId));
+    try {
+      const resp = await fetchClient({
+        url: import.meta.env.VITE_API_URL + `/api/v1/feed/posts/${postId}`,
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        httpMethod: DELETE,
+      });
+
+      if (!resp.ok) {
+        setPosts(prev => [...prev, postToDelete]);
+      }
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setShowEditOptions(false);
+    }
+  };
+
   return (
     <div className={classes.root}>
+      {/* Post top section with post author profile picture and info */}
       <div className={classes.top}>
-        <img src={`${post.author.profilePicture ? post.author.profilePicture : '/public/avatar.png'}`} />
-        <div className={classes.authorInfo}>
-          <div className={classes.authorName}>{post.author.firstName + " " + post.author.lastName}</div>
-          <div className={classes.authorPosition}>
-            {post.author.position}
-          </div>
-          <div className={classes.timeAgo}>5 hours ago</div>
+        <button>
+          <img src={`${post.author.profilePicture ? post.author.profilePicture : '/public/avatar.png'}`} />
+        </button>
+        <div className={classes.postInfo}>
+          <button className={classes.authorInfo}>
+            <div className={classes.authorName}>{post.author.firstName + " " + post.author.lastName}</div>
+            <div className={classes.authorPosition}>
+              {post.author.position + " at " + post.author.company}
+            </div>
+          </button>
+          <div className={classes.timeAgo}>5 hours ago  {post.updatedDateTime ? 'Edited' : ''}</div>
         </div>
       </div>
+
+      {/* Button to edit post for post author only */}
+      {post.author.id === user?.id ? <button className={classes.editPostButton} onClick={() => setShowEditOptions(prev => !prev)}>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3.25 8C3.25 8.69 2.69 9.25 2 9.25C1.31 9.25 0.75 8.69 0.75 8C0.75 7.31 1.31 6.75 2 6.75C2.69 6.75 3.25 7.31 3.25 8ZM14 6.75C13.31 6.75 12.75 7.31 12.75 8C12.75 8.69 13.31 9.25 14 9.25C14.69 9.25 15.25 8.69 15.25 8C15.25 7.31 14.69 6.75 14 6.75ZM8 6.75C7.31 6.75 6.75 7.31 6.75 8C6.75 8.69 7.31 9.25 8 9.25C8.69 9.25 9.25 8.69 9.25 8C9.25 7.31 8.69 6.75 8 6.75Z" fill="currentColor"></path>
+        </svg>
+      </button> : null}
+
+      {/* Post edit options - Edit, Delete */}
+      {showEditOptions  ?<div className={classes.postEditOptions}>
+        <button>Edit</button>
+        <button type="button" onClick={() => deletePost(post.id)}>Delete</button>
+      </div> : null}
+      
+      {/* Post content section */}
       <div className={classes.center}>
         <div className={classes.content}>
-          {post.content}
+          <div className={classes.postContent}>{post.content}</div>
+          {post.picture && <img className={classes.postPicture} src={post.picture} />}
         </div>
         <div className={classes.stats}>
           <div className={classes.likes}>
             {post.likes && post.likes.length > 0 ? `${postLiked ? 'You' : post.likes[0].firstName + " " + post.likes[0].lastName} ${post.likes.length - 1 > 0 ? `and ${post.likes.length - 1} ${post.likes.length - 1 > 1 ? 'others' : 'other'}` : ''} liked this` : ''}
           </div>
-          <div className={classes.comments}>
+          <div className={classes.commentsStat}>
             {
               post.comments && post.comments.length > 0 ? (
                 <button onClick={() => setShowCommentsSection(prev => !prev)}>
@@ -132,6 +176,8 @@ function Post({post, setPosts}: PostProps) {
           </div>
         </div>
       </div>
+
+      {/* Post bottom section with like and comment buttons */}
       <div className={classes.bottom}>
         <button
           className={`${classes.likes} ${postLiked ? classes.active : ''}`}
@@ -153,7 +199,7 @@ function Post({post, setPosts}: PostProps) {
           </svg>
           <span>Like</span>
         </button>
-        <button className={classes.comments} onClick={() => setShowCommentsSection(prev => !prev)}>
+        <button className={classes.commentButton} onClick={() => setShowCommentsSection(prev => !prev)}>
           <svg
             role="none"
             aria-hidden="true"
@@ -172,6 +218,7 @@ function Post({post, setPosts}: PostProps) {
         </button>
       </div>
 
+      {/* This section opens up when we click on comments count or Comment button */}
       {showCommentsSection ? <div className={classes.commentsSection}>
         <form onSubmit={(e) => addComment(e, post.id)} className={classes.commentSectionTop}>
           <button type="button" onClick={() => {console.log('asdf');}}>

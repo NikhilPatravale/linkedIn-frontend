@@ -54,11 +54,14 @@
                 gap: 1rem;
             }
 
-            .allFilter {
+            .allFilter, .feedFilter {
                 background-color: rgb(211, 210, 210);
+                color: black;
+                font-weight: normal;
             }
 
-            .feedFilter {
+            .active {
+                color: white;
                 background-color: var(--primary-color-dark);
             }
 

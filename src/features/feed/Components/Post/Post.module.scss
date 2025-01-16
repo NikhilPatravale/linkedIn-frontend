@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: column;
   margin-top: 1rem;
+  position: relative;
 
   .top {
     display: flex;
@@ -23,13 +24,52 @@
       .authorName {
         font-weight: bold;
         font-size: 1.1rem;
+        border-bottom: 1px solid transparent;
       }
 
-      .timeAgo {
-        font-size: 0.8rem;
+      .authorName:hover {
+        color: var(--primary-color);
+        border-bottom: 1px solid;
+      }
+
+      .authorPosition {
+        font-size: 0.9rem;
         color: #6e6e6e;
       }
     }
+
+    .timeAgo {
+      font-size: 0.8rem;
+      color: #6e6e6e;
+    }
+  }
+
+  .editPostButton {
+    position: absolute;
+    top: 0.5rem;
+    right: 1rem;
+    border-radius: 45%;
+    padding: 0.5rem;
+  }
+
+  .postEditOptions {
+    display: flex;
+    flex-direction: column;
+    background-color: #d4d4d4;
+    align-items: flex-start;
+    position: absolute;
+    border-radius: 0.3rem;
+    padding: 0.5rem;
+    top: 3rem;
+    right: 1.2rem;
+
+    button:not(:last-child) {
+      margin-bottom: 0.5rem;
+    }
+  }
+
+  .editPostButton:hover {
+    background-color: #d4d4d4;
   }
 
   .center {
@@ -44,6 +84,24 @@
       display: flex;
       justify-content: space-between;
       font-size: 0.8rem;
+    }
+
+
+    .content {
+      margin: 0 -1rem;
+
+      .postContent {
+        padding: 1rem;
+      }
+    }
+
+    .commentsStat {
+      border-bottom: 1px solid transparent;
+    }
+
+    .commentsStat:hover {
+      color: var(--primary-color);
+      border-bottom: 1px solid;
     }
   }
 
@@ -72,7 +130,7 @@
       align-items: center;
     }
 
-    .comments {
+    .commentButton {
       display: flex;
       gap: 0.5rem;
       align-items: center;
