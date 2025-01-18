@@ -11,14 +11,15 @@ interface ProfileProps {
 }
 
 function Profile({setShowNavMenu, showProfileMenu, setShowProfileMenu}: ProfileProps) {
-  const { user } = useAuthentication() || {
+  const { user, logout } = useAuthentication() || {
     user: {
       firstName: "",
       lastName: "",
       company: "",
       position: "",
       profilePicture: ""
-    }
+    },
+    logout: () => { console.log('logout failed'); },
   };
   const navigate = useNavigate();
 
@@ -68,18 +69,19 @@ function Profile({setShowNavMenu, showProfileMenu, setShowProfileMenu}: ProfileP
           >
             Settings & Privacy
           </NavLink>
-          <NavLink
-            to="/login"
-            onClick={(e) => {
-              e.preventDefault();
+          <button
+            className={classes.signoutButton}
+            type="button"
+            onClick={() => {
               setShowProfileMenu((prev) => !prev);
               if (window.innerWidth <= 1080) {
                 setShowNavMenu(false);
               }
+              logout();
             }}
           >
             Signout
-          </NavLink>
+          </button>
         </div>
       </div> : null}
     </div>

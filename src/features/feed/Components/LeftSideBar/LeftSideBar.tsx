@@ -11,7 +11,7 @@ function LeftSideBar() {
         <img src="./full-stack-dev.png" alt="" />
       </div>
       <div className={classes.avatar}>
-        <img src={user ? user.profilePicture : "./avatar.png"} alt="" />
+        <img src={user && user.profilePicture ? user.profilePicture : "./avatar.png"} alt="" />
       </div>
       <div className={classes.name}>{user?.firstName + " " + user?.lastName}</div>
       <div className={classes.companyInfo}>{user?.position + " at " + user?.company}</div>

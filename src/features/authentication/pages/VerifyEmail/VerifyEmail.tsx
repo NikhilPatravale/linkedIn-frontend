@@ -5,10 +5,12 @@ import Input from "../../components/Input/Input";
 import { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../../components/Button/Button";
+import { useAuthentication } from "../../context/AuthenticationContextProvider";
 
 function VerifyEmail() {
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const { setUser } = useAuthentication();
   const navigate = useNavigate();
 
   const sendVerificationToken = async () => {
@@ -47,6 +49,7 @@ function VerifyEmail() {
       });
 
       if (resp.ok) {
+        setUser(null);
         navigate("/");
       } else {
         const { message } = await resp.json();

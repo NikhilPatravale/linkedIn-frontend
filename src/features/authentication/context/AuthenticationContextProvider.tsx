@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import Loader from "../../../components/Loader/Loader";
 import { API, LOGIN_URL, POST, SIGNUP_URL, V1 } from "../constants/apiConstants";
-import { LOGIN, REQUEST_PASSWORD_RESET, SIGNUP } from "../constants/routes";
+import { LOGIN, PROFILE, REQUEST_PASSWORD_RESET, SIGNUP, VERIFY_EMAIL } from "../constants/routes";
 import { AuthenticationContextType, User } from "./TypeInterfaces";
 import fetchClient from "../../../utils/fetchClient";
 
@@ -84,23 +84,30 @@ function AuthenticationContextProvider() {
       return;
     }
     fetchUser();
-  }, [user, location.pathname]);
+  }, [fetchUser, user, location.pathname]);
 
   if (isLoading) {
     return <Loader />;
   }
 
-  if (!isLoading && !user && !isAuthRoute) {
-    return <Navigate to="/authentication/login" />;
+  if (!user && !isAuthRoute) {
+    return <Navigate to={LOGIN} />;
   }
 
-  if (user && user.emailVerified && isAuthRoute) {
+  if (user && !user.emailVerified && !location.pathname.includes(VERIFY_EMAIL)) {
+    return <Navigate to={VERIFY_EMAIL} />;
+  }
+
+  if (user && user.emailVerified && !user.profileComplete && !location.pathname.includes(PROFILE)) {
+    return <Navigate to={PROFILE} />;
+  }
+
+  if (user && user.emailVerified && user.profileComplete && isAuthRoute) {
     return <Navigate to="/" />;
   }
 
   return (
-    <AuthenticationContext.Provider value={{ user, login, signup, logout }}>
-      {(user && !user.emailVerified) ? <Navigate to="/authentication/verify-email" /> : null}
+    <AuthenticationContext.Provider value={{ user, login, signup, logout, setUser }}>
       <Outlet />
     </AuthenticationContext.Provider>
   );

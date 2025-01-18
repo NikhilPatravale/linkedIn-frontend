@@ -1,0 +1,22 @@
+.root {
+  .title {
+    font-size: 1.3rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+  }
+
+  .stepTitle {
+    font-weight: bold;
+    margin-bottom: 1rem;
+  }
+
+  .error {
+    color: red;
+  }
+
+  .buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+}

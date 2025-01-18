@@ -2,18 +2,23 @@ import { Dispatch, FormEvent, SetStateAction, useState } from "react";
 import Button from "../../../authentication/components/Button/Button";
 import Input from "../../../authentication/components/Input/Input";
 import classes from "./Modal.module.scss";
-import fetchClient from "../../../../utils/fetchClient";
-import { POST } from "../../../authentication/constants/apiConstants";
 
 interface ModalProps {
   showModal: boolean,
   title: String,
   setShowModal: Dispatch<SetStateAction<boolean>>
+  onSubmit: Function
+  content?: string,
+  pictureUrl?: string
+  postId?: number
 }
 
-function Modal({ showModal = true, title, setShowModal }: ModalProps) {
+function Modal({ showModal = true, title, setShowModal, onSubmit, content, pictureUrl, postId }: ModalProps) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [postContent, setPostContent] = useState(content || "");
+  const [postPictureUrl, setPostPictureUrl] = useState(pictureUrl || "");
+  
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
@@ -27,21 +32,11 @@ function Modal({ showModal = true, title, setShowModal }: ModalProps) {
     }
 
     try {
-      const resp = await fetchClient({
-        url: import.meta.env.VITE_API_URL + "/api/v1/feed/posts",
-        httpMethod: POST,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({
-          content,
-          picture,
-        })
+      onSubmit({
+        postId,
+        content,
+        picture
       });
-
-      if (resp.ok) {
-        setShowModal(false);
-      }
     } catch (error) {
       if (error instanceof Error) {
         setError(error.message);
@@ -70,8 +65,18 @@ function Modal({ showModal = true, title, setShowModal }: ModalProps) {
             className={classes.contentBox}
             onFocus={() => setError("")}
             placeholder="Your post content..."
-            name="postContent" ></textarea>
-          <Input inputSize={"md"} placeholder="Image URL (optional)" name="picture" required={false} />
+            name="postContent"
+            value={postContent}
+            onChange={(e) => setPostContent(e.target.value)}
+          />
+          <Input
+            inputSize={"md"}
+            placeholder="Image URL (optional)"
+            name="picture"
+            required={false}
+            value={postPictureUrl}
+            onChange={(e) => setPostPictureUrl(e.target.value)}
+          />
           {error && <span className={classes.error}>{error}</span>}
           <Button outline={false} type="submit" disabled={loading} >Post</Button>
         </form>

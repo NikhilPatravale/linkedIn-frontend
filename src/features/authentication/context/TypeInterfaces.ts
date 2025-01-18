@@ -15,4 +15,5 @@ export interface AuthenticationContextType {
     login: (email: string, password: string) => Promise<void>,
     signup: (email: string, password: string) => Promise<void>,
     logout: () => void,
+    setUser: React.Dispatch<React.SetStateAction<User | null>>
 }

@@ -40,8 +40,8 @@ function Signup() {
           <h1>Sign up</h1>
           <p>Make the most out of it</p>
           <form onSubmit={doSignup}>
-            <Input key="email" type="text" id="email" name="email" label="Email or Phone" onFocus={() => setErrorMessage("")} />
-            <Input key="password" type="password" id="password" name="password" label="Password" />
+            <Input floatingInput key="email" type="text" id="email" name="email" label="Email or Phone" onFocus={() => setErrorMessage("")} />
+            <Input floatingInput key="password" type="password" id="password" name="password" label="Password" />
             {errorMessage ? <p className={classes.error}>{errorMessage}</p> : null}
             <p className={classes.disclaimer}>
                             By clicking Agree & Join or Continue, you agree to LinkedIn's{" "}

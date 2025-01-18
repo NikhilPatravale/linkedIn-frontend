@@ -10,6 +10,7 @@ import ResetPassword from './features/authentication/pages/ResetPassword/ResetPa
 import AuthenticationContextProvider from './features/authentication/context/AuthenticationContextProvider';
 import AuthenticationLayout from './features/authentication/components/AuthenticationLayout/AuthenticationLayout';
 import ApplicationLayout from './components/ApplicationLayout/ApplicationLayout';
+import Profile from './features/authentication/pages/Profile/Profile';
 
 const router = createBrowserRouter([
   {
@@ -24,25 +25,25 @@ const router = createBrowserRouter([
             element: <Feed />
           },
           {
-            path: "/network",
+            path: "network",
             element: <div>Network</div>
           },
           {
-            path: "/jobs",
+            path: "jobs",
             element: <div>Jobs</div>
           },
           {
-            path: "/messaging",
+            path: "messaging",
             element: <div>Messaging</div>
           },
           {
-            path: "/notifications",
+            path: "notifications",
             element: <div>Notifications</div>
           },
           {
-            path: "/view-profile",
+            path: "view-profile",
             element: <div>View Profile</div>
-          }
+          },
         ]
       },
       {
@@ -65,6 +66,10 @@ const router = createBrowserRouter([
             path: "request-password-reset",
             element: <ResetPassword />,
           },
+          {
+            path: "profile",
+            element: <Profile />
+          }
         ]
       }
     ]

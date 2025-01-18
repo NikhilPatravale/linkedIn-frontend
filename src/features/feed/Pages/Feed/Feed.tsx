@@ -6,7 +6,7 @@ import classes from './Feed.module.scss';
 import Button from '../../../authentication/components/Button/Button';
 import Post from '../../Components/Post/Post';
 import fetchClient from '../../../../utils/fetchClient';
-import { API, GET, GET_FEED_URL, V1 } from '../../../authentication/constants/apiConstants';
+import { API, GET, GET_FEED_URL, POST, V1 } from '../../../authentication/constants/apiConstants';
 import Modal from '../../Components/Modal/Modal';
 
 export function Feed() {
@@ -44,6 +44,27 @@ export function Feed() {
     fetchPosts();
   }, [filter]);
 
+  const createNewPost = async ({
+    content,
+    picture
+  }: { content: string, picture: string }) => {
+    const resp = await fetchClient({
+      url: import.meta.env.VITE_API_URL + "/api/v1/feed/posts",
+      httpMethod: POST,
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({
+        content,
+        picture,
+      })
+    });
+
+    if (resp.ok) {
+      setShowModal(false);
+    }
+  };
+
   return (
     <div className={classes.root}>
       <div className={classes.left}>
@@ -75,7 +96,12 @@ export function Feed() {
               : null
           }
         </div>
-        <Modal showModal={showModal} setShowModal={setShowModal} title="Create a post" />
+        <Modal
+          title="Create a post"
+          showModal={showModal}
+          setShowModal={setShowModal}
+          onSubmit={createNewPost}
+        />
       </div>
       <div className={classes.right}>
         <RightSideBar />
