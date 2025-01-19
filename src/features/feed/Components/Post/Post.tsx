@@ -1,4 +1,4 @@
-import { Dispatch, FormEvent, SetStateAction, useState } from "react";
+import { Dispatch, FormEvent, SetStateAction, useEffect, useState } from "react";
 import { User } from "../../../authentication/context/TypeInterfaces";
 import classes from "./Post.module.scss";
 import { useAuthentication } from "../../../authentication/context/AuthenticationContextProvider";
@@ -21,8 +21,6 @@ interface Post {
   creationDateTime: string,
   updatedDateTime?: string,
   author: User,
-  likes?: User[],
-  comments?: PostComment[],
 }
 
 interface PostProps {
@@ -32,11 +30,71 @@ interface PostProps {
 
 function Post({post, setPosts}: PostProps) {
   const { user } = useAuthentication() || {};
-  const [postLiked, setPostLiked] = useState(!!post.likes?.some((like) => like.id === user?.id));
+  const [postLiked, setPostLiked] = useState(false);
   const [showCommentsSection, setShowCommentsSection] = useState(false);
   const [addCommentText, setAddCommentText] = useState("");
   const [showEditOptions, setShowEditOptions] = useState(false);
   const [editingPost, setEditingPost] = useState(false);
+  const [comments, setComments] = useState<Post[]>([]);
+  const [likes, setLikes] = useState<User[]>([]);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchLikes = async () => {
+      try {
+        const resp = await fetchClient({
+          url: import.meta.env.VITE_API_URL + `/api/v1/feed/posts/${post.id}/likes`,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+
+        if (resp.ok) {
+          const likes = await resp.json();
+          setLikes(likes);
+          setPostLiked(likes.some((like: User) => like.id === user?.id));
+        } else {
+          const { message } = await resp.json();
+          throw new Error(message);
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          setError(error.message);
+        } else {
+          setError("Something went wrong");
+        }
+      }
+    };
+    fetchLikes();
+  }, [post.id, user?.id]);
+
+  useEffect(() => {
+    const fetchComments = async () => {
+      try {
+        const resp = await fetchClient({
+          url: import.meta.env.VITE_API_URL + `/api/v1/feed/posts/${post.id}/comments`,
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+
+        if (resp.ok) {
+          const comments = await resp.json();
+          setComments(comments);
+        } else {
+          const { message } = await resp.json();
+          throw new Error(message);
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          setError(error.message);
+        } else {
+          setError("Something went wrong");
+        }
+      }
+    };
+    fetchComments();
+  }, [post.id]);
 
   const likePost = async () => {
     try {
@@ -77,6 +135,11 @@ function Post({post, setPosts}: PostProps) {
     e.preventDefault();
     const commentContent = e.currentTarget.commentBox.value;
 
+    if (!commentContent) {
+      setError("Comment content can not be empty");
+      return;
+    }
+
     try {
       const resp = await fetchClient({
         url: import.meta.env.VITE_API_URL + `/api/v1/feed/posts/${postId}/comments`,
@@ -92,13 +155,7 @@ function Post({post, setPosts}: PostProps) {
       if (resp.ok) {
         const addedComment = await resp.json();
         setAddCommentText("");
-        setPosts((prev) => prev.map((singlePost) => {
-          if (singlePost.id === postId && user) {
-            const updatedComments = singlePost.comments;
-            updatedComments?.push(addedComment);
-          }
-          return singlePost;
-        }));
+        setComments(prev => [addedComment, ...prev]);
       }
     } catch(error) {
       console.log(error);
@@ -205,19 +262,20 @@ function Post({post, setPosts}: PostProps) {
           </div>
           <div className={classes.stats}>
             <div className={classes.likes}>
-              {post.likes && post.likes.length > 0 ? `${postLiked ? 'You' : post.likes[0].firstName + " " + post.likes[0].lastName} ${post.likes.length - 1 > 0 ? `and ${post.likes.length - 1} ${post.likes.length - 1 > 1 ? 'others' : 'other'}` : ''} liked this` : ''}
+              {likes.length > 0 ? `${postLiked ? 'You' : likes[0].firstName + " " + likes[0].lastName} ${likes.length - 1 > 0 ? `and ${likes.length - 1} ${likes.length - 1 > 1 ? 'others' : 'other'}` : ''} liked this` : ''}
             </div>
             <div className={classes.commentsStat}>
               {
-                post.comments && post.comments.length > 0 ? (
+                comments.length > 0 ? (
                   <button onClick={() => setShowCommentsSection(prev => !prev)}>
-                    {post.comments.length} {post.comments.length > 1 ? 'comments' : 'comment'}
+                    {comments.length} {comments.length > 1 ? 'comments' : 'comment'}
                   </button>
                 ) : null
               }
             </div>
           </div>
         </div>
+        {/* {error && <div style={{color: 'red'}}>{error}</div>} */}
 
         {/* Post bottom section with like and comment buttons */}
         <div className={classes.bottom}>
@@ -264,7 +322,7 @@ function Post({post, setPosts}: PostProps) {
         {showCommentsSection ? <div className={classes.commentsSection}>
           <form onSubmit={(e) => addComment(e, post.id)} className={classes.commentSectionTop}>
             <button type="button" onClick={() => {console.log('asdf');}}>
-              <img className={classes.commentSectionProfilePic} src={user ? user.profilePicture : '/public/avatar.png'} alt="" />
+              <img className={classes.commentSectionProfilePic} src={user && user.profilePicture ? user.profilePicture : '/public/avatar.png'} alt="" />
             </button>
             <input
               className={classes.commentBox}
@@ -287,9 +345,7 @@ function Post({post, setPosts}: PostProps) {
             </div>
           </form>
           <div className={classes.commentsList}>
-            {post.comments && post.comments.length > 0
-              ? post.comments.map((comment) => <Comment key={`${comment.id}`} comment={comment} />)
-              : null}
+            {comments.map((comment) => <Comment key={`${comment.id}`} comment={comment} />)}
           </div>
         </div>
           : null}
