@@ -6,12 +6,13 @@ import request from "../../../../utils/api";
 import { DELETE, PUT } from "../../../authentication/constants/apiConstants";
 import Comment from "../Comment/Comment";
 import Modal from "../Modal/Modal";
-import time from "../../../../utils/time";
+import Time from "../Time/Time";
 
 export interface PostComment {
   id: Number,
   content: string,
-  author: User
+  author: User,
+  creationDateTime: string,
 }
 
 interface Post {
@@ -168,7 +169,7 @@ function Post({post, setPosts}: PostProps) {
                 {post.author.position + " at " + post.author.company}
               </div>
             </button>
-            <div className={classes.timeAgo}>{time(post.updatedDateTime || post.creationDateTime)}  {post.updatedDateTime ? 'Edited..' : ''}</div>
+            <Time creationTime={post.creationDateTime} isEdited={!!post.updatedDateTime} />
           </div>
         </div>
 
