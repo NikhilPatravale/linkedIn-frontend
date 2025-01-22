@@ -5,8 +5,8 @@ import RightSideBar from '../../Components/RightSideBar/RightSideBar';
 import classes from './Feed.module.scss';
 import Button from '../../../authentication/components/Button/Button';
 import Post from '../../Components/Post/Post';
-import fetchClient from '../../../../utils/fetchClient';
-import { API, GET, GET_FEED_URL, POST, V1 } from '../../../authentication/constants/apiConstants';
+import request from '../../../../utils/api';
+import { POST } from '../../../authentication/constants/apiConstants';
 import Modal from '../../Components/Modal/Modal';
 
 export function Feed() {
@@ -19,26 +19,14 @@ export function Feed() {
 
   useEffect(() => {
     const fetchPosts = async () => {
-      try {
-        const resp = await fetchClient({
-          url: import.meta.env.VITE_API_URL + API + V1 + GET_FEED_URL + `${filter === "allPosts" ? "/posts" : ''}`,
-          httpMethod: GET,
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          }
-        });
-        if (resp.ok) {
-          const posts = await resp.json();
-          setPosts(posts);
-        } else {
-          const { message } = await resp.json();
-          throw new Error(message);
-        }
-      } catch(error) {
-        if (error instanceof Error) {
-          setErrorMessage(error.message);
-        } else setErrorMessage("Something went wrong");
-      }
+      await request<Post[]>({
+        endPoint: "/api/v1/feed" + `${filter === "allPosts" ? "/posts" : ''}`,
+        onSuccess: (data) => {
+          setErrorMessage("");
+          setPosts(data);
+        },
+        onFailure: (error) => setErrorMessage(error),
+      });
     };
 
     fetchPosts();
@@ -48,21 +36,16 @@ export function Feed() {
     content,
     picture
   }: { content: string, picture: string }) => {
-    const resp = await fetchClient({
-      url: import.meta.env.VITE_API_URL + "/api/v1/feed/posts",
+    await request<Post>({
+      endPoint: "/api/v1/feed/posts",
       httpMethod: POST,
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
       body: JSON.stringify({
         content,
         picture,
-      })
+      }),
+      onSuccess: () => setShowModal(false),
+      onFailure: (error) => console.log(error),
     });
-
-    if (resp.ok) {
-      setShowModal(false);
-    }
   };
 
   return (

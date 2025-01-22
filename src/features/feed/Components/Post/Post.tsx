@@ -2,7 +2,7 @@ import { Dispatch, FormEvent, SetStateAction, useEffect, useState } from "react"
 import { User } from "../../../authentication/context/TypeInterfaces";
 import classes from "./Post.module.scss";
 import { useAuthentication } from "../../../authentication/context/AuthenticationContextProvider";
-import fetchClient from "../../../../utils/fetchClient";
+import request from "../../../../utils/api";
 import { DELETE, PUT } from "../../../authentication/constants/apiConstants";
 import Comment from "../Comment/Comment";
 import Modal from "../Modal/Modal";
@@ -35,100 +35,52 @@ function Post({post, setPosts}: PostProps) {
   const [addCommentText, setAddCommentText] = useState("");
   const [showEditOptions, setShowEditOptions] = useState(false);
   const [editingPost, setEditingPost] = useState(false);
-  const [comments, setComments] = useState<Post[]>([]);
+  const [comments, setComments] = useState<PostComment[]>([]);
   const [likes, setLikes] = useState<User[]>([]);
   const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchLikes = async () => {
-      try {
-        const resp = await fetchClient({
-          url: import.meta.env.VITE_API_URL + `/api/v1/feed/posts/${post.id}/likes`,
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-
-        if (resp.ok) {
-          const likes = await resp.json();
-          setLikes(likes);
-          setPostLiked(likes.some((like: User) => like.id === user?.id));
-        } else {
-          const { message } = await resp.json();
-          throw new Error(message);
-        }
-      } catch (error) {
-        if (error instanceof Error) {
-          setError(error.message);
-        } else {
-          setError("Something went wrong");
-        }
-      }
+      await request<User[]>({
+        endPoint: `/api/v1/feed/posts/${post.id}/likes`,
+        onSuccess: (data) => {
+          setLikes(data);
+          setPostLiked(data.some((like: User) => like.id === user?.id));
+        },
+        onFailure: (error) => setError(error),
+      });
     };
     fetchLikes();
   }, [post.id, user?.id]);
 
   useEffect(() => {
     const fetchComments = async () => {
-      try {
-        const resp = await fetchClient({
-          url: import.meta.env.VITE_API_URL + `/api/v1/feed/posts/${post.id}/comments`,
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-
-        if (resp.ok) {
-          const comments = await resp.json();
-          setComments(comments);
-        } else {
-          const { message } = await resp.json();
-          throw new Error(message);
-        }
-      } catch (error) {
-        if (error instanceof Error) {
-          setError(error.message);
-        } else {
-          setError("Something went wrong");
-        }
-      }
+      await request<PostComment[]>({
+        endPoint: `/api/v1/feed/posts/${post.id}/comments`,
+        onSuccess: (data) => setComments(data),
+        onFailure: (error) => setError(error),
+      });
     };
     fetchComments();
   }, [post.id]);
 
   const likePost = async () => {
-    try {
-      setPostLiked(prev => !prev);
-      const resp = await fetchClient({
-        url: import.meta.env.VITE_API_URL + `/api/v1/feed/posts/${post.id}/like`,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        },
-        httpMethod: PUT
-      });
-
-      if (!resp.ok) {
-        setPostLiked(prev => !prev);
-      } else {
-        setPosts((prev) => prev.map((singlePost) => {
-          if (singlePost.id === post.id && user) {
-            let updatedLikes = singlePost.likes;
-            if (updatedLikes && updatedLikes.some(like => like.id === user.id)) {
-              updatedLikes = updatedLikes.filter(like => like.id !== user.id);
-            } else {
-              updatedLikes?.push(user);
-            }
-            return {
-              ...singlePost,
-              likes: updatedLikes,
-            };
-          }
-          return singlePost;
-        }));
-      }
-    } catch {
-      setPostLiked(prev => !prev);
-    }
+    setPostLiked(prev => !prev);
+    
+    await request<User>({
+      endPoint: `/api/v1/feed/posts/${post.id}/like`,
+      httpMethod: PUT,
+      onSuccess: () => {
+        if (user) {
+          setLikes(prev => {
+            const isLikePresent = prev.some(like => like.id === user?.id);
+            if (isLikePresent) return prev.filter(like => like.id === user?.id);
+            return [user, ...prev];
+          });
+        }
+      },
+      onFailure: () => setPostLiked(prev => !prev),
+    });
   };
 
   const addComment = async (e: FormEvent<HTMLFormElement>, postId: Number) => {
@@ -139,74 +91,56 @@ function Post({post, setPosts}: PostProps) {
       setError("Comment content can not be empty");
       return;
     }
-
-    try {
-      const resp = await fetchClient({
-        url: import.meta.env.VITE_API_URL + `/api/v1/feed/posts/${postId}/comments`,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({
-          content: commentContent,
-        }),
-        httpMethod: PUT
-      });
-
-      if (resp.ok) {
-        const addedComment = await resp.json();
+    
+    await request<PostComment>({
+      endPoint: `/api/v1/feed/posts/${postId}/comments`,
+      httpMethod: PUT,
+      body: JSON.stringify({
+        content: commentContent,
+      }),
+      onSuccess: (data) => {
         setAddCommentText("");
-        setComments(prev => [addedComment, ...prev]);
-      }
-    } catch(error) {
-      console.log(error);
-    }
+        setComments(prev => [data, ...prev]);
+      },
+      onFailure: (error) => console.log(error),
+    });
   };
 
   const deletePost = async (postId: Number) => {
     const postToDelete = post;
     setPosts(prev => prev.filter(singlePost => singlePost.id !== postId));
-    try {
-      const resp = await fetchClient({
-        url: import.meta.env.VITE_API_URL + `/api/v1/feed/posts/${postId}`,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        httpMethod: DELETE,
-      });
-
-      if (!resp.ok) {
+    
+    await request<String>({
+      endPoint: `/api/v1/feed/posts/${postId}`,
+      httpMethod: DELETE,
+      onSuccess: () => {},
+      onFailure: (error) => {
         setPosts(prev => [...prev, postToDelete]);
-      }
-    } catch (err) {
-      console.log(err);
-    } finally {
-      setShowEditOptions(false);
-    }
+        console.log(error);
+      },
+    });
+    setShowEditOptions(false);
   };
 
   const editPost = async ({ postId, content, picture }: { postId: number, content: string, picture: string }) => {
-    const resp = await fetchClient({
-      url: import.meta.env.VITE_API_URL + `/api/v1/feed/posts/${postId}`,
+    await request<Post>({
+      endPoint: `/api/v1/feed/posts/${postId}`,
       httpMethod: PUT,
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`
-      },
       body: JSON.stringify({
         content,
         picture
       }),
-    });
-    if (resp.ok) {
-      const updatedPost = await resp.json();
-      setPosts(prev => prev.map((singlePost) => {
+      onSuccess: (data) => setPosts(prev => prev.map((singlePost) => {
         if (singlePost.id === postId) {
-          return updatedPost;
+          return data;
         }
         return singlePost;
-      }));
-    } else {
-      throw new Error("Something went wrong");
-    }
+      })),
+      onFailure: () => {
+        throw new Error("Something went wrong");
+      },
+    });
+    
     setEditingPost(false);
   };
 

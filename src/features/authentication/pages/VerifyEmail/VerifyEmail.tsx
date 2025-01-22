@@ -6,6 +6,8 @@ import { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../../components/Button/Button";
 import { useAuthentication } from "../../context/AuthenticationContextProvider";
+import request from "../../../../utils/api";
+import { PUT } from "../../constants/apiConstants";
 
 function VerifyEmail() {
   const [message, setMessage] = useState("");
@@ -14,54 +16,26 @@ function VerifyEmail() {
   const navigate = useNavigate();
 
   const sendVerificationToken = async () => {
-    try {
-      const resp = await fetch(import.meta.env.VITE_API_URL + "/api/v1/authentication/send-email-verification-token", {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        },
-      });
-    
-      if (resp.ok) {
-        setMessage("Verification token sent");
-      } else {
-        setErrorMessage("Some error occurred while sending verificaiton code");
-      }
-    } catch(error) {
-      if (error instanceof Error) {
-        setErrorMessage(error.message);
-      } else {
-        setErrorMessage("Something went wrong");
-      }
-    }
+    await request<String>({
+      endPoint: "/api/v1/authentication/send-email-verification-token",
+      httpMethod: PUT,
+      onSuccess: () => setMessage("Verification token sent"),
+      onFailure: (error) => setErrorMessage(error),
+    });
   };
 
   const verifyEmail = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const verificationCode = event.currentTarget.code.value;
-        
-    try {
-      const resp = await fetch(import.meta.env.VITE_API_URL + `/api/v1/authentication/validate-email-verification-token?token=${verificationCode}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        }
-      });
-
-      if (resp.ok) {
+    await request<String>({
+      endPoint: `/api/v1/authentication/validate-email-verification-token?token=${verificationCode}`,
+      httpMethod: PUT,
+      onSuccess: () => {
         setUser(null);
         navigate("/");
-      } else {
-        const { message } = await resp.json();
-        setErrorMessage(message);
-      }
-    } catch(error) {
-      if (error instanceof Error) {
-        setErrorMessage(error.message);
-      } else {
-        setErrorMessage("Something went wrong");
-      }
-    }
+      },
+      onFailure: (error) => setErrorMessage(error),
+    });
   };
 
   return (

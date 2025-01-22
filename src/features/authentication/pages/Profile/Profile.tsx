@@ -3,10 +3,11 @@ import Box from '../../components/Box/Box';
 import Input from '../../components/Input/Input';
 import Button from '../../components/Button/Button';
 import classes from "./Profile.module.scss";
-import fetchClient from '../../../../utils/fetchClient';
+import request from '../../../../utils/api';
 import { PUT } from '../../constants/apiConstants';
 import { useAuthentication } from '../../context/AuthenticationContextProvider';
 import { useNavigate } from 'react-router-dom';
+import { User } from '../../context/TypeInterfaces';
 
 function Profile() {
   const [profileState, setProfileState] = useState({
@@ -42,38 +43,24 @@ function Profile() {
 
     setLoading(true);
 
-    try {
-      const resp = await fetchClient({
-        url: import.meta.env.VITE_API_URL + `/api/v1/authentication/profile/${user?.id}`,
-        httpMethod: PUT,
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({
-          firstName,
-          lastName,
-          company,
-          position,
-          location,
-        }),
-      });
-
-      if (!resp.ok) {
-        throw new Error("Something went wrong");
-      } else {
-        const userData = await resp.json();
-        setUser(userData);
+    await request<User>({
+      endPoint: `/api/v1/authentication/profile/${user?.id}`,
+      httpMethod: PUT,
+      body: JSON.stringify({
+        firstName,
+        lastName,
+        company,
+        position,
+        location,
+      }),
+      onSuccess: (data) => {
+        setUser(data);
         navigate("/");
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        setError(error.message);
-      } else {
-        setError("Something went wrong");
-      }
-    } finally {
-      setLoading(false);
-    }
+      },
+      onFailure: (error) => setError(error),
+    });
+    
+    setLoading(false);
   };
 
   return (

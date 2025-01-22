@@ -5,7 +5,8 @@ import Button from "../../components/Button/Button";
 import Box from "../../components/Box/Box";
 import { useNavigate } from "react-router-dom";
 import { FormEvent, useState } from "react";
-import fetchClient from "../../../../utils/fetchClient";
+import request from "../../../../utils/api";
+import { PUT } from "../../constants/apiConstants";
 
 function ResetPassword() {
   const navigate = useNavigate();
@@ -18,23 +19,17 @@ function ResetPassword() {
     event.preventDefault();
     setLoading(true);
     const email = event.currentTarget.email.value;
-    try {
-      await fetchClient({
-        url: import.meta.env.VITE_API_URL + `/api/v1/authentication/send-password-reset-token?email=${email}`,
-        httpMethod: "PUT"
-      });
-      setIsSubmitted(true);
-      setEmail(email);
-    } catch (err) {
-      if (err instanceof Error) {
-        setErrorMessage(err.message);
-      } else {
-        setErrorMessage("Something went wrong.");
-      }
-    } finally {
-      setLoading(false);
-    }
 
+    await request<String>({
+      endPoint: `/api/v1/authentication/send-password-reset-token?email=${email}`,
+      httpMethod: PUT,
+      onSuccess: () => {
+        setIsSubmitted(true);
+        setEmail(email);
+      },
+      onFailure: (error) => setErrorMessage(error),
+    });
+    setLoading(false);
   };
 
   const resetPassword = async (event: FormEvent<HTMLFormElement>) => {
@@ -43,35 +38,19 @@ function ResetPassword() {
     const code = event.currentTarget.verficationCode?.value;
     const newPassword = event.currentTarget.newPassword?.value;
 
-    try {
-      const resp = await fetch(import.meta.env.VITE_API_URL + "/api/v1/authentication/reset-password", {
-        method: "PUT",
-        headers: {
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          token: code,
-          newPassword,
-        }),
-      });
+    await request<String>({
+      endPoint: "/api/v1/authentication/reset-password",
+      httpMethod: PUT,
+      body: JSON.stringify({
+        email,
+        token: code,
+        newPassword,
+      }),
+      onSuccess: () => navigate("/authentication/login"),
+      onFailure: (error) => setErrorMessage(error),
+    });
 
-      if (!resp.ok) {
-        const { message } = await resp.json();
-        setErrorMessage(message);
-      } else {
-        navigate("/authentication/login");
-      }
-    } catch (err) {
-      if (err instanceof Error) {
-        setErrorMessage(err.message);
-      } else {
-        setErrorMessage("Something went wrong.");
-      }
-    } finally {
-      setLoading(false);
-    }
-
+    setLoading(false);
   };
 
   const clearError = () => {

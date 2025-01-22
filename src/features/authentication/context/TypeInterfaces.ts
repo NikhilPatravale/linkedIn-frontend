@@ -17,3 +17,8 @@ export interface AuthenticationContextType {
     logout: () => void,
     setUser: React.Dispatch<React.SetStateAction<User | null>>
 }
+
+export interface AuthReponseType {
+    token: string,
+    message: string
+}
