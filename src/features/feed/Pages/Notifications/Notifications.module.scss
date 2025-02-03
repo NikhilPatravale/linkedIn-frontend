@@ -1,0 +1,51 @@
+.root {
+    display: grid;
+    gap: 2rem;
+    max-width: 74rem;
+    width: 100%;
+    margin: 0 auto;
+  
+    .left,
+    .right {
+      display: none;
+    }
+  
+    @media screen and (width >=1135px) {
+      grid-template-columns: 14rem 1fr 20rem;
+  
+      .left,
+      .right {
+        display: block;
+      }
+    }
+  
+    .center {
+      display: flex;
+      flex-direction: column;
+
+      .notification {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          background-color: white;
+          border: 1px solid #e0e0e0;
+          padding: 0.6rem;
+
+          &.isRead {
+            background-color: #c1c1c1ba;
+          }
+      
+          .details {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+          }
+      
+          img {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+          }
+        }
+    }
+}

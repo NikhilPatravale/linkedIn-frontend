@@ -11,6 +11,7 @@ import AuthenticationContextProvider from './features/authentication/context/Aut
 import AuthenticationLayout from './features/authentication/components/AuthenticationLayout/AuthenticationLayout';
 import ApplicationLayout from './components/ApplicationLayout/ApplicationLayout';
 import Profile from './features/authentication/pages/Profile/Profile';
+import Notifications from './features/feed/Pages/Notifications/Notifications';
 
 const router = createBrowserRouter([
   {
@@ -38,7 +39,7 @@ const router = createBrowserRouter([
           },
           {
             path: "notifications",
-            element: <div>Notifications</div>
+            element: <Notifications />
           },
           {
             path: "view-profile",
