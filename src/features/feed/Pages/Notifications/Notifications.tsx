@@ -10,7 +10,7 @@ import { PUT } from "../../../authentication/constants/apiConstants";
 
 enum NotificationType {
   LIKE ='LIKE',
-  COMMENT = 'Comment',
+  COMMENT = 'COMMENT',
 }
 
 export interface NotificationInterface {
