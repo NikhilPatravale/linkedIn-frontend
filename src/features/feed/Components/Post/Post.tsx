@@ -1,12 +1,14 @@
-import { Dispatch, FormEvent, SetStateAction, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { User } from "../../../authentication/context/TypeInterfaces";
 import classes from "./Post.module.scss";
 import { useAuthentication } from "../../../authentication/context/AuthenticationContextProvider";
 import request from "../../../../utils/api";
-import { DELETE, PUT } from "../../../authentication/constants/apiConstants";
+import { PUT } from "../../../authentication/constants/apiConstants";
 import Comment from "../Comment/Comment";
 import Modal from "../Modal/Modal";
 import Time from "../Time/Time";
+import { useWebSocketContext } from "../../../ws/WebSocketContextProvider";
+import { StompSubscription } from "@stomp/stompjs";
 
 export interface PostComment {
   id: Number,
@@ -26,14 +28,16 @@ interface Post {
 
 interface PostProps {
   post: Post,
-  setPosts: Dispatch<SetStateAction<Post[]>>,
+  deletePost?: (postToDelete: Post) => void,
+  editPost?: ({ postId, content, picture }: { postId: number, content: string, picture: string }) => void,
 }
 
-function Post({post, setPosts}: PostProps) {
+function Post({post, deletePost, editPost }: PostProps) {
   const { user } = useAuthentication() || {};
+  const webSocketClient = useWebSocketContext();
+  const commentBoxInputRef = useRef<HTMLInputElement>(null);
   const [postLiked, setPostLiked] = useState(false);
   const [showCommentsSection, setShowCommentsSection] = useState(false);
-  const [addCommentText, setAddCommentText] = useState("");
   const [showEditOptions, setShowEditOptions] = useState(false);
   const [editingPost, setEditingPost] = useState(false);
   const [comments, setComments] = useState<PostComment[]>([]);
@@ -55,6 +59,34 @@ function Post({post, setPosts}: PostProps) {
   }, [post.id, user?.id]);
 
   useEffect(() => {
+    let likeSubscription: StompSubscription | undefined;
+    let commentSubscription: StompSubscription | undefined;
+    if (post?.id) {
+      likeSubscription = webSocketClient?.subscribe(`/topic/notifications/post/${post.id}/likes`, (mesage) => {
+        if (mesage.body) {
+          console.log(JSON.parse(mesage.body));
+          setLikes(JSON.parse(mesage.body));
+        }
+      });
+      commentSubscription = webSocketClient?.subscribe(`/topic/notifications/post/${post.id}/comment`, (message) => {
+        const body = message.body;
+        if (body) {
+          setComments(prev => [JSON.parse(body), ...prev]);
+        }
+      });
+    }
+
+    return () => {
+      if (likeSubscription) {
+        likeSubscription.unsubscribe();
+      }
+      if (commentSubscription) {
+        commentSubscription.unsubscribe();
+      }
+    };
+  }, [webSocketClient, post?.id]);
+
+  useEffect(() => {
     const fetchComments = async () => {
       await request<PostComment[]>({
         endPoint: `/api/v1/feed/posts/${post.id}/comments`,
@@ -66,83 +98,56 @@ function Post({post, setPosts}: PostProps) {
   }, [post.id]);
 
   const likePost = async () => {
-    setPostLiked(prev => !prev);
+    setPostLiked(prev => {
+      console.log("Current PostLiked: ", prev);
+      return !prev;
+    });
     
     await request<User>({
       endPoint: `/api/v1/feed/posts/${post.id}/like`,
       httpMethod: PUT,
-      onSuccess: () => {
-        if (user) {
-          setLikes(prev => {
-            const isLikePresent = prev.some(like => like.id === user?.id);
-            if (isLikePresent) return prev.filter(like => like.id === user?.id);
-            return [user, ...prev];
-          });
-        }
-      },
       onFailure: () => setPostLiked(prev => !prev),
     });
   };
 
   const addComment = async (e: FormEvent<HTMLFormElement>, postId: Number) => {
     e.preventDefault();
-    const commentContent = e.currentTarget.commentBox.value;
+    if (commentBoxInputRef.current) {
+      const commentContent = commentBoxInputRef.current.value;
 
-    if (!commentContent) {
-      setError("Comment content can not be empty");
-      return;
+      if (!commentContent) {
+        setError("Comment content can not be empty");
+        return;
+      }
+
+      await request<PostComment>({
+        endPoint: `/api/v1/feed/posts/${postId}/comments`,
+        httpMethod: PUT,
+        body: JSON.stringify({
+          content: commentContent,
+        }),
+        onSuccess: () => {
+          if (commentBoxInputRef.current) {
+            commentBoxInputRef.current.value = "";
+          }
+        },
+        onFailure: (error) => console.log(error),
+      });
     }
-    
-    await request<PostComment>({
-      endPoint: `/api/v1/feed/posts/${postId}/comments`,
-      httpMethod: PUT,
-      body: JSON.stringify({
-        content: commentContent,
-      }),
-      onSuccess: (data) => {
-        setAddCommentText("");
-        setComments(prev => [data, ...prev]);
-      },
-      onFailure: (error) => console.log(error),
-    });
   };
 
-  const deletePost = async (postId: Number) => {
-    const postToDelete = post;
-    setPosts(prev => prev.filter(singlePost => singlePost.id !== postId));
-    
-    await request<String>({
-      endPoint: `/api/v1/feed/posts/${postId}`,
-      httpMethod: DELETE,
-      onSuccess: () => {},
-      onFailure: (error) => {
-        setPosts(prev => [...prev, postToDelete]);
-        console.log(error);
-      },
-    });
-    setShowEditOptions(false);
+  const postDeletHandler = async () => {
+    if (deletePost) {
+      deletePost(post);
+      setShowEditOptions(false);
+    }
   };
 
-  const editPost = async ({ postId, content, picture }: { postId: number, content: string, picture: string }) => {
-    await request<Post>({
-      endPoint: `/api/v1/feed/posts/${postId}`,
-      httpMethod: PUT,
-      body: JSON.stringify({
-        content,
-        picture
-      }),
-      onSuccess: (data) => setPosts(prev => prev.map((singlePost) => {
-        if (singlePost.id === postId) {
-          return data;
-        }
-        return singlePost;
-      })),
-      onFailure: () => {
-        throw new Error("Something went wrong");
-      },
-    });
-    
-    setEditingPost(false);
+  const postEditHandler = async ({ postId, content, picture }: { postId: number, content: string, picture: string }) => {
+    if (editPost) {
+      editPost({ postId, content, picture });
+      setEditingPost(false);
+    }
   };
 
   return (
@@ -151,7 +156,7 @@ function Post({post, setPosts}: PostProps) {
         title="Editing a post"
         showModal={editingPost}
         setShowModal={setEditingPost}
-        onSubmit={editPost}
+        onSubmit={postEditHandler}
         content={post.content}
         pictureUrl={post.picture}
         postId={post.id}
@@ -181,12 +186,12 @@ function Post({post, setPosts}: PostProps) {
         </button> : null}
 
         {/* Post edit options - Edit, Delete */}
-        {showEditOptions  ?<div className={classes.postEditOptions}>
+        {showEditOptions ? <div className={classes.postEditOptions}>
           <button onClick={() => {
             setShowEditOptions(false);
             setEditingPost(true);
           }}>Edit</button>
-          <button type="button" onClick={() => deletePost(post.id)}>Delete</button>
+          <button type="button" onClick={postDeletHandler}>Delete</button>
         </div> : null}
       
         {/* Post content section */}
@@ -197,7 +202,14 @@ function Post({post, setPosts}: PostProps) {
           </div>
           <div className={classes.stats}>
             <div className={classes.likes}>
-              {likes.length > 0 ? `${postLiked ? 'You' : likes[0].firstName + " " + likes[0].lastName} ${likes.length - 1 > 0 ? `and ${likes.length - 1} ${likes.length - 1 > 1 ? 'others' : 'other'}` : ''} liked this` : ''}
+              {
+                likes.length > 0
+                  ? `${postLiked ? 'You' : likes[0].firstName + " " + likes[0].lastName}
+                  ${likes.length - 1 > 0 // If likes are more than 1 then show 'and {count of remaining likes}'
+      ? `and ${likes.length - 1} ${likes.length - 1 > 1 ? 'others' : 'other'}` // If {count of remaining likes} is more than 1 then show 'others' or show 'other'
+      : ''} liked this` // Static text to show when any like is present
+                  : '' // If likes are less than or equal to 0 then don't show anything
+              }
             </div>
             <div className={classes.commentsStat}>
               {
@@ -210,7 +222,7 @@ function Post({post, setPosts}: PostProps) {
             </div>
           </div>
         </div>
-        {/* {error && <div style={{color: 'red'}}>{error}</div>} */}
+        {error && <div style={{color: 'red'}}>{error}</div>}
 
         {/* Post bottom section with like and comment buttons */}
         <div className={classes.bottom}>
@@ -260,11 +272,10 @@ function Post({post, setPosts}: PostProps) {
               <img className={classes.commentSectionProfilePic} src={user && user.profilePicture ? user.profilePicture : '/public/avatar.png'} alt="" />
             </button>
             <input
+              ref={commentBoxInputRef}
               className={classes.commentBox}
               name="commentBox"
               placeholder="Add a comment..."
-              value={addCommentText}
-              onChange={(e) => setAddCommentText(e.target.value)}
             />
             <div className={classes.commentInputOptions}>
               <button>
@@ -280,7 +291,7 @@ function Post({post, setPosts}: PostProps) {
             </div>
           </form>
           <div className={classes.commentsList}>
-            {comments.map((comment) => <Comment key={`${comment.id}`} comment={comment} />)}
+            {comments.map((comment) => <Comment key={`comment-${comment.id}`} comment={comment} />)}
           </div>
         </div>
           : null}

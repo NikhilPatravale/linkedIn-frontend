@@ -17,7 +17,7 @@ function Comment({ comment }: { comment: PostComment }) {
               <div className={classes.commentAuthorPosition}>{author.position + " at " + author.company}</div>
             </div>
           </button>
-          <Time creationTime={creationDateTime} isEdited={false} />
+          <Time key={`time-${creationDateTime}`} creationTime={creationDateTime} isEdited={false} />
         </div>
         <div className={classes.commentContent}>{content}</div>
       </div>

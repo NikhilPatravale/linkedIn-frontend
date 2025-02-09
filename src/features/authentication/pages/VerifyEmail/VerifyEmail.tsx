@@ -12,7 +12,7 @@ import { PUT } from "../../constants/apiConstants";
 function VerifyEmail() {
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const { setUser } = useAuthentication();
+  const { setUser } = useAuthentication() || {};
   const navigate = useNavigate();
 
   const sendVerificationToken = async () => {
@@ -31,7 +31,7 @@ function VerifyEmail() {
       endPoint: `/api/v1/authentication/validate-email-verification-token?token=${verificationCode}`,
       httpMethod: PUT,
       onSuccess: () => {
-        setUser(null);
+        if(setUser) setUser(null);
         navigate("/");
       },
       onFailure: (error) => setErrorMessage(error),

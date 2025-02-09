@@ -6,7 +6,7 @@ import classes from './Feed.module.scss';
 import Button from '../../../authentication/components/Button/Button';
 import Post from '../../Components/Post/Post';
 import request from '../../../../utils/api';
-import { POST } from '../../../authentication/constants/apiConstants';
+import { DELETE, POST, PUT } from '../../../authentication/constants/apiConstants';
 import Modal from '../../Components/Modal/Modal';
 
 export function Feed() {
@@ -48,6 +48,40 @@ export function Feed() {
     });
   };
 
+  const deletePost = async (postToDelete: Post) => {
+    const postId = postToDelete.id;
+    setPosts(prev => prev.filter(singlePost => singlePost.id !== postId));
+
+    await request<String>({
+      endPoint: `/api/v1/feed/posts/${postId}`,
+      httpMethod: DELETE,
+      onFailure: (error) => {
+        setPosts(prev => [...prev, postToDelete]);
+        console.log(error);
+      },
+    });
+  };
+
+  const editPost = async ({ postId, content, picture }: { postId: number, content: string, picture: string }) => {
+    await request<Post>({
+      endPoint: `/api/v1/feed/posts/${postId}`,
+      httpMethod: PUT,
+      body: JSON.stringify({
+        content,
+        picture
+      }),
+      onSuccess: (data) => setPosts(prev => prev.map((singlePost) => {
+        if (singlePost.id === postId) {
+          return data;
+        }
+        return singlePost;
+      })),
+      onFailure: () => {
+        throw new Error("Something went wrong");
+      },
+    });
+  };
+
   return (
     <div className={classes.root}>
       <div className={classes.left}>
@@ -75,7 +109,7 @@ export function Feed() {
         <div>
           {
             posts
-              ? posts.map((post) => <Post key={`${post.id}`} post={post} setPosts={setPosts} />)
+              ? posts.map((post) => <Post key={`${post.id}`} post={post} deletePost={deletePost} editPost={editPost} />)
               : null
           }
         </div>

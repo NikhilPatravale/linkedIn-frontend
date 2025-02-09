@@ -4,25 +4,58 @@ import classes from './Header.module.scss';
 import Profile from './Components/Profile';
 import { useEffect, useState } from 'react';
 import { useAuthentication } from '../../features/authentication/context/AuthenticationContextProvider';
+import request from '../../utils/api';
+import { NotificationInterface } from '../../features/feed/Pages/Notifications/Notifications';
+import { useWebSocketContext } from '../../features/ws/WebSocketContextProvider';
+import { Message, StompSubscription } from '@stomp/stompjs';
 
 function Header() {
   const [showNavMenu, setShowNavMenu] = useState(
     window.innerWidth > 1080 ? true : false
   );
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState<number>(0);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const { user } = useAuthentication() || { user: {} };
+  const { user } = useAuthentication() || { };
+  const webSocketClient = useWebSocketContext();
   
   useEffect(() => {
     const handleResize = () => {
       setShowNavMenu(window.innerWidth > 1080);
     };
 
+    const fetchNotifications = async () => {
+      await request<NotificationInterface[]>({
+        endPoint: "/api/v1/notifications",
+        onSuccess: (data) => {
+          setUnreadNotificationCount(data.filter((notification) => !notification.isRead).length);
+        },
+      });
+    };
+
     window.addEventListener("resize", handleResize);
+    fetchNotifications();
 
     return () => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+
+  useEffect(() => {
+    let notificationsSubscription: StompSubscription;
+    if (webSocketClient) {
+      notificationsSubscription = webSocketClient.subscribe(`/topic/notifications/user/${user?.id}/notification`, (message: Message) => {
+        if (message.body) {
+          setUnreadNotificationCount(prev => prev + 1);
+        }
+      });
+    }
+
+    return () => {
+      if (webSocketClient) {
+        notificationsSubscription.unsubscribe();
+      }
+    };
+  }, [user, webSocketClient]);
 
   return (
     <div className={classes.root}>
@@ -146,10 +179,14 @@ function Header() {
                   <span>Messaging</span>
                 </NavLink>
               </li>
-              <li>
+              <li className={classes.notificationIcon}>
+                {unreadNotificationCount > 0 && <span className={classes.notificationCount}>
+                  <span>{unreadNotificationCount}</span>
+                </span>}
                 <NavLink
                   to="/notifications"
                   onClick={() => {
+                    setUnreadNotificationCount(0);
                     setShowProfileMenu(false);
                     if (window.innerWidth <= 1080) {
                       setShowNavMenu(false);

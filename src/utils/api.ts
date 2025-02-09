@@ -28,9 +28,11 @@ async function request<T>({
       body,
     });
 
-    if (resp.ok && onSuccess) {
-      const data: T = await resp.json();
-      onSuccess(data);
+    if (resp.ok) {
+      if (onSuccess) {
+        const data: T = await resp.json();
+        onSuccess(data);
+      }
     } else {
       const { message }: { message: string} = await resp.json();
       throw new Error(message);

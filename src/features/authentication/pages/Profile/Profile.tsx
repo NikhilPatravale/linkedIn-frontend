@@ -20,7 +20,7 @@ function Profile() {
   const [step, setStep] = useState(0);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { user, setUser } = useAuthentication();
+  const { user, setUser } = useAuthentication() || {};
   const navigate = useNavigate();
 
   const updateProfile = async () => {
@@ -54,7 +54,7 @@ function Profile() {
         location,
       }),
       onSuccess: (data) => {
-        setUser(data);
+        if(setUser) setUser(data);
         navigate("/");
       },
       onFailure: (error) => setError(error),
