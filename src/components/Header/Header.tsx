@@ -43,7 +43,7 @@ function Header() {
   useEffect(() => {
     let notificationsSubscription: StompSubscription;
     if (webSocketClient) {
-      notificationsSubscription = webSocketClient.subscribe(`/topic/notifications/user/${user?.id}/notification`, (message: Message) => {
+      notificationsSubscription = webSocketClient.subscribe(`/topic/notifications/users/${user?.id}/notification`, (message: Message) => {
         if (message.body) {
           setUnreadNotificationCount(prev => prev + 1);
         }
