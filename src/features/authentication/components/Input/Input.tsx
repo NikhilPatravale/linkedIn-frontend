@@ -10,7 +10,7 @@ type InputProps = {
 
 function Input({ label, inputSize, floatingInput, width, ...otherProps } : InputProps) {
   return (
-    <div className={`${classes.root} ${classes[inputSize || 'lg']}`} id={otherProps.id}>
+    <div className={`${classes.root} ${classes[inputSize || 'lg']}`}>
       <input
         required
         className={`${floatingInput ? classes.floatingInput : ''}`}

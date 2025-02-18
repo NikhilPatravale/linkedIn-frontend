@@ -12,6 +12,7 @@ import AuthenticationLayout from './features/authentication/components/Authentic
 import ApplicationLayout from './components/ApplicationLayout/ApplicationLayout';
 import Profile from './features/authentication/pages/Profile/Profile';
 import Notifications from './features/feed/Pages/Notifications/Notifications';
+import Messaging from './features/feed/Pages/Messaging/Messaging';
 
 const router = createBrowserRouter([
   {
@@ -35,7 +36,7 @@ const router = createBrowserRouter([
           },
           {
             path: "messaging",
-            element: <div>Messaging</div>
+            element: <Messaging />
           },
           {
             path: "notifications",

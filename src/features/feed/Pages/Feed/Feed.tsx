@@ -121,7 +121,7 @@ export function Feed() {
         />
       </div>
       <div className={classes.right}>
-        <RightSideBar />
+        <RightSideBar heading="Add to your feed" />
       </div>
     </div>
   );

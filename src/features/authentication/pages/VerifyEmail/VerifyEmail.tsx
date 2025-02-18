@@ -45,11 +45,16 @@ function VerifyEmail() {
           <h1>Verify your email</h1>
           <form onSubmit={verifyEmail}>
             <p>Onlye one step left to complete your registration. Verify your email address.</p>
-            <Input type="text" label="Verification code" key="code" name="code" onFocus={() => {
-              setMessage("");
-              setErrorMessage("");
-            }}
-            floatingInput
+            <Input
+              type="text" 
+              id="verification-code"
+              label="Verification code"
+              key="code"
+              name="code" onFocus={() => {
+                setMessage("");
+                setErrorMessage("");
+              }}
+              floatingInput
             />
             {message ? <p className={classes.message}>{message}</p> : null}
             {errorMessage ? <p className={classes.errorMessage}>{errorMessage}</p> : null}

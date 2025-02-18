@@ -1,10 +1,10 @@
 import Button from "../../../authentication/components/Button/Button";
 import classes from "./RightSideBar.module.scss";
 
-function RightSideBar() {
+function RightSideBar({ heading }: { heading: string }) {
   return (
     <div className={classes.root}>
-      <h3>Add to your feed</h3>
+      <h3>{heading}</h3>
       <div className={classes.items}>
         <div className={classes.item}>
           <img className={classes.avatar} src="/avatar.png" alt="" />
