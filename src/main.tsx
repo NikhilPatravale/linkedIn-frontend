@@ -12,7 +12,8 @@ import AuthenticationLayout from './features/authentication/components/Authentic
 import ApplicationLayout from './components/ApplicationLayout/ApplicationLayout';
 import Profile from './features/authentication/pages/Profile/Profile';
 import Notifications from './features/feed/Pages/Notifications/Notifications';
-import Messaging from './features/feed/Pages/Messaging/Messaging';
+import Messaging from './features/messaging/pages/Messaging/Messaging';
+import Conversations from './features/messaging/components/Conversations/Conversations';
 
 const router = createBrowserRouter([
   {
@@ -36,7 +37,11 @@ const router = createBrowserRouter([
           },
           {
             path: "messaging",
-            element: <Messaging />
+            element: <Messaging />,
+            children: [{
+              path: "conversations/:conversationId",
+              element: <Conversations />
+            }]
           },
           {
             path: "notifications",

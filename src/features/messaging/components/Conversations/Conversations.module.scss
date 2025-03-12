@@ -1,0 +1,116 @@
+.root {
+  display: grid;
+  grid-template-rows: 5rem 28rem 5rem;
+
+  .conversationTop {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 1rem;
+    align-items: center;
+
+    .profileInfo {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      img {
+        height: 3rem;
+        width: 3rem;
+      }
+
+      .profileDetails {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+
+        .companyDetails {
+          font-size: 0.8rem;
+          color: #6e6e6e;
+        }
+      }
+    }
+
+    .closeButton {
+      height: 2rem;
+      width: 2rem;
+      border-radius: 50%;
+      background-color: #e0e0e0;
+    }
+
+    .closeButton:hover {
+      background-color: #f3f3f3;
+    }
+  }
+
+  .messages {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1rem;
+    overflow: auto;
+
+    .sentMessage {
+      align-self: flex-end;
+      max-width: 50%;
+      display: flex;
+      flex-direction: column;
+
+      .sentMessageStyle {
+        padding: 1rem;
+        width: fit-content;
+        border: 1px solid #e0e0e0;
+        border-radius: 2rem;
+        background-color: #1f8af6;
+        color: white;
+      }
+
+      .readInfo {
+        height: 1rem;
+        width: 2rem;
+        align-self: flex-end;
+      }
+    }
+
+    .receivedMessage {
+      align-self: flex-start;
+      max-width: 50%;
+
+      .receivedMessageStyle {
+        padding: 1rem;
+        width: fit-content;
+        border: 1px solid #e0e0e0;
+        border-radius: 2rem;
+        background-color: #e6e6e6;
+        color: black;
+      }
+    }
+  }
+
+  .messageInput {
+    position: relative;
+    align-self: flex-end;
+    width: 100%;
+    padding: 0 1rem;
+
+    .sendButton {
+      height: 1.5rem;
+      width: 1.5rem;
+      position: absolute;
+      top: 1.9rem;
+      right: 2rem;
+      color: transparent;
+      stroke: black;
+
+      &.enabled {
+        color: var(--primary-color);
+        stroke: #e0e0e0;
+      }
+    }
+
+    .sendButton:disabled {
+      cursor: not-allowed;
+    }
+  }
+}

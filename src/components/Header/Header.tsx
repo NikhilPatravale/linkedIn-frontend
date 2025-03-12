@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import Input from '../../features/authentication/components/Input/Input';
 import classes from './Header.module.scss';
 import Profile from './Components/Profile';
@@ -14,9 +14,11 @@ function Header() {
     window.innerWidth > 1080 ? true : false
   );
   const [unreadNotificationCount, setUnreadNotificationCount] = useState<number>(0);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState<number>(0);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { user } = useAuthentication() || { };
   const webSocketClient = useWebSocketContext();
+  const location = useLocation();
   
   useEffect(() => {
     const handleResize = () => {
@@ -42,10 +44,17 @@ function Header() {
 
   useEffect(() => {
     let notificationsSubscription: StompSubscription;
+    let unreadMessageNotification: StompSubscription;
+
     if (webSocketClient) {
       notificationsSubscription = webSocketClient.subscribe(`/topic/notifications/users/${user?.id}/notification`, (message: Message) => {
-        if (message.body) {
+        if (message.body && !location.pathname.includes("notifications")) {
           setUnreadNotificationCount(prev => prev + 1);
+        }
+      });
+      unreadMessageNotification = webSocketClient?.subscribe(`/topic/notifications/users/${user?.id}/message`, (message) => {
+        if (message.body && !location.pathname.includes("messaging")) {
+          setUnreadMessagesCount(prev => prev + 1);
         }
       });
     }
@@ -53,9 +62,10 @@ function Header() {
     return () => {
       if (webSocketClient) {
         notificationsSubscription.unsubscribe();
+        unreadMessageNotification.unsubscribe();
       }
     };
-  }, [user, webSocketClient]);
+  }, [user, webSocketClient, location]);
 
   return (
     <div className={classes.root}>
@@ -158,10 +168,14 @@ function Header() {
                   <span>Jobs</span>
                 </NavLink>
               </li>
-              <li>
+              <li className={classes.messagingLink}>
+                {unreadMessagesCount > 0 && <span className={classes.unreadMessagesCount}>
+                  <span>{unreadMessagesCount}</span>
+                </span>}
                 <NavLink
                   to="/messaging"
                   onClick={() => {
+                    setUnreadMessagesCount(0);
                     setShowProfileMenu(false);
                     if (window.innerWidth <= 1080) {
                       setShowNavMenu(false);

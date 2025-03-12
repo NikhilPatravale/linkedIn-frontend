@@ -1,0 +1,48 @@
+.root {
+  position: relative;
+  padding: 0.5rem;
+
+  &.active {
+    background-color: #e0e0e0;
+  }
+
+  .conversation {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    width: 100%;
+
+    .conversationProfileImage {
+      height: 2.5rem;
+      width: 2.5rem;
+    }
+
+    .conversationProfileInfo {
+      text-align: left;
+
+      .lastMessage {
+        font-size: 0.8rem;
+        color: #6f6f6f;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+
+  .unreadMessages {
+    position: absolute;
+    top: 20%;
+    right: 1rem;
+    height: 1rem;
+    width: 1rem;
+    border-radius: 50%;
+    background-color: red;
+    text-align: center;
+    color: white;
+    font-size: 0.7rem;
+  }
+}
