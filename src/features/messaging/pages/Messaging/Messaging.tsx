@@ -3,7 +3,7 @@ import RightSideBar from "../../../feed/Components/RightSideBar/RightSideBar";
 import classes from "./Messaging.module.scss";
 import request from "../../../../utils/api";
 import { User } from "../../../authentication/context/TypeInterfaces";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import Conversation from "../../components/Conversation/Conversation";
 
 export interface Message {
@@ -31,6 +31,7 @@ function Messaging() {
   // const [errorFetchingNewConversationList, setErrorFetchingNewConversationList] = useState<string>("");
   // const [showStartNewConversation, setShowStartNewConversation] = useState<boolean>(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const [showConversationList, setShowConversationList] = useState(window.innerWidth >= 1024 || !location.pathname.includes("conversations"));
 
   useEffect(() => {
@@ -61,36 +62,6 @@ function Messaging() {
     );
   }, [location.pathname]);
 
-  // const handleAddConversation = async () => {
-  //   setShowStartNewConversation(true);
-  //   setSelectedConversation(null);
-  //   setIsLoading(true);
-  //   await request<User[]>({
-  //     endPoint: "/api/v1/authentication/users",
-  //     onSuccess: (data) => setNewConversationsList(data),
-  //     onFailure: (error) => setErrorFetchingNewConversationList(error),
-  //   });
-  //   setIsLoading(false);
-  // };
-
-  // const handleStartNewConversation = async (user: User) => {
-  //   const existingConversationWithUser = conversations.find(conversation =>
-  //     conversation.author.id === user.id || conversation.recipient.id === user.id);
-
-  //   setShowStartNewConversation(false);
-
-  //   if (existingConversationWithUser) {
-  //     setSelectedConversation({
-  //       user,
-  //       conversation: existingConversationWithUser,
-  //     });
-  //   } else {
-  //     setSelectedConversation({
-  //       user,
-  //     });
-  //   }
-  // };
-
   return (
     <div className={classes.root}>
       <div className={classes.messagingContainer}>
@@ -99,8 +70,7 @@ function Messaging() {
             <h4>Messaging</h4>
             <button
               className={classes.addButton}
-              // onClick={handleAddConversation}
-              // disabled={isLoading}
+              onClick={() => navigate("/messaging/conversations/new-conversation")}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -124,7 +94,7 @@ function Messaging() {
             </button>
           </div>
           <div className={classes.messageList}>
-            {!errorMessage && conversations.length <= 0 && <span>No conversation to display</span>}
+            {!errorMessage && conversations.length <= 0 && <span style={{ marginLeft: '1rem' }} >No conversation to display</span>}
 
             {errorMessage && <span className={classes.errorMessage} >{errorMessage}</span>}
 

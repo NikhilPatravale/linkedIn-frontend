@@ -14,6 +14,7 @@ import Profile from './features/authentication/pages/Profile/Profile';
 import Notifications from './features/feed/Pages/Notifications/Notifications';
 import Messaging from './features/messaging/pages/Messaging/Messaging';
 import Conversations from './features/messaging/components/Conversations/Conversations';
+import NewConverstaion from './features/messaging/components/NewConversation/NewConverstaion';
 
 const router = createBrowserRouter([
   {
@@ -41,6 +42,9 @@ const router = createBrowserRouter([
             children: [{
               path: "conversations/:conversationId",
               element: <Conversations />
+            }, {
+              path: "conversations/new-conversation",
+              element: <NewConverstaion />
             }]
           },
           {
